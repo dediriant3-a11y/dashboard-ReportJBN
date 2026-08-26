@@ -408,7 +408,6 @@
 
     initCharts([], [], [0,0,0,0,0]);
 
-    // FUNGSI FETCH DARI GITHUB - SPESIFIK MENGAMBIL DATA SHEET4
     function fetchDataFromGitHub() {
       const statusEl = document.getElementById('syncStatus');
       statusEl.innerText = "Mengambil data Sheet4 dari GitHub...";
@@ -433,7 +432,7 @@
           });
 
           if (!targetSheetName) {
-            targetSheetName = workbook.SheetNames[3] || workbook.SheetNames.find(n => n.includes("4"));
+            targetSheetName = workbook.SheetNames[4] || workbook.SheetNames.find(n => n.includes("4"));
           }
 
           if (!targetSheetName) {
@@ -510,15 +509,15 @@
       const primaryHeaderRow = matrix[tableHeaderIdx];
       const colMap = {};
       
-      // Deteksi Pemetaan Kolom Fleksibel
+      // Pemetaan Kolom Fleksibel
       primaryHeaderRow.forEach((colCell, idx) => {
-        let colName = String(colCell || "").trim().toUpperCase();
+        let colName = String(colCell || "").trim().toUpperCase().replace(/\s+/g, ' ');
         
-        if (!colName && tableHeaderIdx > 0) colName = String(matrix[tableHeaderIdx - 1][idx] || "").trim().toUpperCase();
-        if (!colName && tableHeaderIdx + 1 < matrix.length) colName = String(matrix[tableHeaderIdx + 1][idx] || "").trim().toUpperCase();
+        if (!colName && tableHeaderIdx > 0) colName = String(matrix[tableHeaderIdx - 1][idx] || "").trim().toUpperCase().replace(/\s+/g, ' ');
+        if (!colName && tableHeaderIdx + 1 < matrix.length) colName = String(matrix[tableHeaderIdx + 1][idx] || "").trim().toUpperCase().replace(/\s+/g, ' ');
 
         if (colName.includes("WITEL")) colMap.witel = idx;
-        else if (colName.includes("TOTAL RE") || colName.endsWith(" RE")) colMap.totalRe = idx;
+        else if (colName.includes("TOTAL RE") || colName === "RE" || colName.includes("REGISTERED")) colMap.totalRe = idx;
         else if (colName.includes("PRE PI")) colMap.prePi = idx;
         else if (colName === "TOTAL PI" || colName === "PI") colMap.pi = idx;
         else if (colName.includes("FALLOUT")) colMap.fallout = idx;
@@ -529,9 +528,9 @@
         else if (colName.includes("TTI")) colMap.tti = idx;
       });
 
-      // Fallback untuk TOTAL RE jika berada pada kolom terakhir (indeks 13)
-      if (colMap.totalRe === undefined && primaryHeaderRow.length >= 13) {
-        colMap.totalRe = primaryHeaderRow.length - 1;
+      // PERBAIKAN UTAMA: Tentukan indeks kolom TOTAL RE secara spesifik ke indeks 13 (kolom terakhir Sheet4)
+      if (colMap.totalRe === undefined) {
+        colMap.totalRe = 13;
       }
 
       const cleanNum = (val) => {
@@ -560,7 +559,7 @@
 
         const item = {
           witel: witelVal,
-          totalRe: colMap.totalRe !== undefined ? cleanNum(row[colMap.totalRe]) : 0,
+          totalRe: cleanNum(row[colMap.totalRe]),
           prePi: cleanNum(row[colMap.prePi]),
           pi: cleanNum(row[colMap.pi]),
           fallout: cleanNum(row[colMap.fallout]),
@@ -585,7 +584,7 @@
       const sumFallout = totalRow ? totalRow.fallout : rowsData.reduce((acc, cur) => acc + cur.fallout, 0);
       const sumPS = totalRow ? totalRow.ps : rowsData.reduce((acc, cur) => acc + cur.ps, 0);
 
-      // Render Card Atas (Hasilnya: Total RE = 3.050)
+      // Render Nilai Card Top
       document.getElementById('cardTotalRE').innerText = sumTotalRE.toLocaleString('id-ID');
       document.getElementById('cardPI').innerText = sumPI.toLocaleString('id-ID');
       document.getElementById('cardQC2').innerText = sumQC2.toLocaleString('id-ID');
@@ -602,7 +601,6 @@
         return num.toFixed(2) + "%";
       };
 
-      // Gabungkan data witel dan baris total untuk ditampilkan di tabel
       const allTableRows = [...rowsData];
       if (totalRow) allTableRows.push(totalRow);
 
@@ -646,7 +644,6 @@
       initCharts(barLabels, barData, [totPrePi, sumPI, sumFallout, sumQC2, sumPS]);
     }
 
-    // Jalankan auto-fetch saat pertama kali halaman terbuka
     window.addEventListener('DOMContentLoaded', fetchDataFromGitHub);
   </script>
 </body>
