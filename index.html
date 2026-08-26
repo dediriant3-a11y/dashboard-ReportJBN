@@ -239,6 +239,7 @@
 
     tr:nth-child(even) { background-color: #f8fafc; }
     tr:hover { background-color: #f1f5f9; }
+    tr.row-total { background-color: #e2e8f0; font-weight: 700; }
 
     .witel { text-align: left; font-weight: 600; color: #0f172a; }
     .green { color: #10b981; font-weight: 700; }
@@ -426,13 +427,11 @@
           const data = new Uint8Array(buffer);
           const workbook = XLSX.read(data, { type: 'array', cellDates: true });
 
-          // LOGIKA PERBAIKAN: Cari persis nama Sheet yang mengandung kata 'Sheet4' atau indeks ke-4 (indeks 3)
           let targetSheetName = workbook.SheetNames.find(name => {
             const clean = name.toLowerCase().replace(/\s+/g, '');
             return clean === "sheet4" || clean.endsWith("sheet4");
           });
 
-          // Fallback jika bernama 'Sheet 4' atau berada di urutan posisi tab ke-4
           if (!targetSheetName) {
             targetSheetName = workbook.SheetNames[3] || workbook.SheetNames.find(n => n.includes("4"));
           }
@@ -444,7 +443,6 @@
           const sheet = workbook.Sheets[targetSheetName];
           const jsonMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
-          // Process matrix data
           processExcelData(jsonMatrix);
 
           const now = new Date();
@@ -467,7 +465,6 @@
       let excelDateReport = "";
       let tableHeaderIdx = -1;
 
-      // Scan header metadata dan letak tabel 'WITEL'
       for (let r = 0; r < matrix.length; r++) {
         const row = matrix[r];
         if (!row) continue;
@@ -513,7 +510,7 @@
       const primaryHeaderRow = matrix[tableHeaderIdx];
       const colMap = {};
       
-      // Deteksi Pemetaan Kolom
+      // Deteksi Pemetaan Kolom Fleksibel
       primaryHeaderRow.forEach((colCell, idx) => {
         let colName = String(colCell || "").trim().toUpperCase();
         
@@ -521,7 +518,7 @@
         if (!colName && tableHeaderIdx + 1 < matrix.length) colName = String(matrix[tableHeaderIdx + 1][idx] || "").trim().toUpperCase();
 
         if (colName.includes("WITEL")) colMap.witel = idx;
-        else if (colName.includes("TOTAL RE") || colName === "RE") colMap.totalRe = idx;
+        else if (colName.includes("TOTAL RE") || colName.endsWith(" RE")) colMap.totalRe = idx;
         else if (colName.includes("PRE PI")) colMap.prePi = idx;
         else if (colName === "TOTAL PI" || colName === "PI") colMap.pi = idx;
         else if (colName.includes("FALLOUT")) colMap.fallout = idx;
@@ -531,6 +528,11 @@
         else if (colName.includes("PS/PI")) colMap.psPi = idx;
         else if (colName.includes("TTI")) colMap.tti = idx;
       });
+
+      // Fallback untuk TOTAL RE jika berada pada kolom terakhir (indeks 13)
+      if (colMap.totalRe === undefined && primaryHeaderRow.length >= 13) {
+        colMap.totalRe = primaryHeaderRow.length - 1;
+      }
 
       const cleanNum = (val) => {
         if (val === undefined || val === null || val === "") return 0;
@@ -583,6 +585,7 @@
       const sumFallout = totalRow ? totalRow.fallout : rowsData.reduce((acc, cur) => acc + cur.fallout, 0);
       const sumPS = totalRow ? totalRow.ps : rowsData.reduce((acc, cur) => acc + cur.ps, 0);
 
+      // Render Card Atas (Hasilnya: Total RE = 3.050)
       document.getElementById('cardTotalRE').innerText = sumTotalRE.toLocaleString('id-ID');
       document.getElementById('cardPI').innerText = sumPI.toLocaleString('id-ID');
       document.getElementById('cardQC2').innerText = sumQC2.toLocaleString('id-ID');
@@ -599,8 +602,15 @@
         return num.toFixed(2) + "%";
       };
 
-      rowsData.forEach(item => {
+      // Gabungkan data witel dan baris total untuk ditampilkan di tabel
+      const allTableRows = [...rowsData];
+      if (totalRow) allTableRows.push(totalRow);
+
+      allTableRows.forEach(item => {
         const tr = document.createElement('tr');
+        if (item.witel.toUpperCase().includes("TOTAL")) {
+          tr.classList.add("row-total");
+        }
 
         const psReFormatted = formatPercent(item.psRe);
         const psPiFormatted = formatPercent(item.psPi);
