@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Corporate Auto-Update GitHub - Sheet4</title>
+  <!-- Chart.js for graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS / xlsx library -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .status-bar {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-refresh {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .btn-refresh:hover {
+      background: #1d4ed8;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    .badge {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 20px 24px;
+      position: relative;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .card-re { border-left: 4px solid #8b5cf6; background: linear-gradient(135deg, #ffffff 60%, #f3e8ff 100%); }
+    .card-re::before { background: #8b5cf6; }
+    .card-re .card-icon { background: #ede9fe; color: #7c3aed; }
+    .card-re .value { color: #6d28d9; }
+
+    .card-pi { border-left: 4px solid #3b82f6; background: linear-gradient(135deg, #ffffff 60%, #eff6ff 100%); }
+    .card-pi::before { background: #3b82f6; }
+    .card-pi .card-icon { background: #dbeafe; color: #2563eb; }
+    .card-pi .value { color: #1d4ed8; }
+
+    .card-qc2 { border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #ffffff 60%, #fffbeb 100%); }
+    .card-qc2::before { background: #f59e0b; }
+    .card-qc2 .card-icon { background: #fef3c7; color: #d97706; }
+    .card-qc2 .value { color: #b45309; }
+
+    .card-fallout { border-left: 4px solid #f43f5e; background: linear-gradient(135deg, #ffffff 60%, #fff1f2 100%); }
+    .card-fallout::before { background: #f43f5e; }
+    .card-fallout .card-icon { background: #ffe4e6; color: #e11d48; }
+    .card-fallout .value { color: #be123c; }
+
+    .card-ps { border-left: 4px solid #10b981; background: linear-gradient(135deg, #ffffff 60%, #ecfdf5 100%); }
+    .card-ps::before { background: #10b981; }
+    .card-ps .card-icon { background: #d1fae5; color: #059669; }
+    .card-ps .value { color: #047857; }
+
+    .card-icon {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      z-index: 1;
+    }
+
+    .card h3 {
+      margin: 0 0 10px 0;
+      font-size: 13px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 700;
+      padding-right: 48px;
+    }
+
+    .card .value {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .card .sub-text {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      color: #0f172a;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 260px !important;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      color: #0f172a;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      border: 1px solid #e2e8f0;
+    }
+
+    th {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 12px 14px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    tr:nth-child(even) { background-color: #f8fafc; }
+    tr:hover { background-color: #f1f5f9; }
+
+    .witel { text-align: left; font-weight: 600; color: #0f172a; }
+    .green { color: #10b981; font-weight: 700; }
+    .red { color: #f43f5e; font-weight: 700; }
+
+    .notes {
+      margin-top: 24px;
+      background: #f8fafc;
+      border-left: 4px solid #3b82f6;
+      padding: 14px 16px;
+      border-radius: 8px;
+      color: #475569;
+      line-height: 1.7;
+      font-size: 13px;
+    }
+    .notes strong { color: #0f172a; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Status Auto Fetch Bar -->
+    <div class="status-bar">
+      <div>
+        <span style="font-weight: 600; font-size: 14px; color: #2563eb;">🔄 Mode Auto-Fetch GitHub:</span>
+        <span id="syncStatus" style="font-size: 13px; color: #64748b; margin-left: 8px;">Mengambil data dari GitHub...</span>
+      </div>
+      <button class="btn-refresh" onclick="fetchDataFromGitHub()">Sync Data Terbaru</button>
+    </div>
+
+    <div class="header">
+      <div>
+        <h1 id="reportTitle">PROVISIONING NEW SALES INDIBIZ TR3 JBN MTD H-1</h1>
+        <div style="margin-top:8px; font-size:13px; color:#64748b; line-height:1.7;">
+          <div><strong>Tanggal Report :</strong> <span id="reportDate">-</span></div>
+          <div><strong>Periode Order &amp; PS :</strong> <span id="reportPeriod">-</span></div>
+          <div><strong>Last Update Proses :</strong> <span id="reportUpdate">-</span></div>
+        </div>
+      </div>
+      <div class="badge">Telkom Regional 3 Jatim Bali Nusra</div>
+    </div>
+
+    <div class="cards">
+      <div class="card card-re">
+        <div class="card-icon">📊</div>
+        <h3>TOTAL RE</h3>
+        <div class="value" id="cardTotalRE">0</div>
+        <div class="sub-text">Registered Entries</div>
+      </div>
+
+      <div class="card card-pi">
+        <div class="card-icon">📑</div>
+        <h3>PI</h3>
+        <div class="value" id="cardPI">0</div>
+        <div class="sub-text">Prospek / Order In</div>
+      </div>
+      
+      <div class="card card-qc2">
+        <div class="card-icon">⚡</div>
+        <h3>QC2</h3>
+        <div class="value" id="cardQC2">0</div>
+        <div class="sub-text">Dalam Proses QC2</div>
+      </div>
+      
+      <div class="card card-fallout">
+        <div class="card-icon">⚠️</div>
+        <h3>TOTAL FALLOUT</h3>
+        <div class="value" id="cardFallout">0</div>
+        <div class="sub-text">Kategori Fallout</div>
+      </div>
+
+      <div class="card card-ps">
+        <div class="card-icon">✅</div>
+        <h3>PS</h3>
+        <div class="value" id="cardPS">0</div>
+        <div class="sub-text">Penjualan Selesai</div>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="panel">
+        <h3>Grafik Batang - Distribusi PS per WITEL</h3>
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="panel">
+        <h3>Grafik Pie - Komposisi Status</h3>
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>WITEL</th>
+          <th>TOTAL RE</th>
+          <th>PRE PI</th>
+          <th>PI</th>
+          <th>TOTAL FALLOUT</th>
+          <th>QC2</th>
+          <th>PS</th>
+          <th>PS/RE (%) (Target 80%)</th>
+          <th>PS/PI (%) (Target 94%)</th>
+          <th>TTI COMPLY 1X24 (%) (Target 94%)</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr>
+          <td colspan="10" style="text-align:center; color:#94a3b8; padding:20px;">Memuat data dari Sheet4 GitHub...</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="notes">
+      <strong>* SLA WISA 2026 </strong><br>
+      1. TTI Compliance HSI (AO/MO) | 1x24 jam 94%<br>
+      2. Compliance Order Aging (AOSODOMORO) 3x24 jam 90%<br>
+      3. PS to PI Ratio HSI (AO/MO/PDA) 94%<br>
+      4. Fallout Order HSI (AOSODOMORO) 1x12 jam> 90%<br>
+    </div>
+  </div>
+
+  <script>
+    // URL Raw File Excel dari Repositori GitHub
+    const GITHUB_EXCEL_URL = "https://raw.githubusercontent.com/dediriant3-a11y/dashboard-HSI-JBN/main/data.xlsx";
+
+    let barChartInstance = null;
+    let pieChartInstance = null;
+
+    function initCharts(barLabels, barData, pieData) {
+      const barCtx = document.getElementById('barChart').getContext('2d');
+      if (barChartInstance) barChartInstance.destroy();
+      barChartInstance = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: barLabels.length ? barLabels : ['No Data'],
+          datasets: [{
+            label: 'PS',
+            data: barData.length ? barData : [0],
+            backgroundColor: '#2563eb',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      const pieCtx = document.getElementById('pieChart').getContext('2d');
+      if (pieChartInstance) pieChartInstance.destroy();
+      pieChartInstance = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: ['PRE PI', 'PI', 'FALLOUT', 'QC2', 'PS'],
+          datasets: [{
+            data: pieData && pieData.some(v => v > 0) ? pieData : [0,0,0,0,0],
+            backgroundColor: ['#64748b', '#3b82f6', '#f43f5e', '#f59e0b', '#10b981']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    }
+
+    initCharts([], [], [0,0,0,0,0]);
+
+    // FUNGSI FETCH DARI GITHUB - SPESIFIK MENGAMBIL DATA SHEET4
+    function fetchDataFromGitHub() {
+      const statusEl = document.getElementById('syncStatus');
+      statusEl.innerText = "Mengambil data Sheet4 dari GitHub...";
+      statusEl.style.color = "#d97706";
+
+      const cacheBusterUrl = GITHUB_EXCEL_URL + '?t=' + new Date().getTime();
+
+      fetch(cacheBusterUrl, { cache: 'no-store' })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}. Periksa kembali URL File GitHub.`);
+          }
+          return response.arrayBuffer();
+        })
+        .then(buffer => {
+          const data = new Uint8Array(buffer);
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+
+          // LOGIKA PERBAIKAN: Cari persis nama Sheet yang mengandung kata 'Sheet4' atau indeks ke-4 (indeks 3)
+          let targetSheetName = workbook.SheetNames.find(name => {
+            const clean = name.toLowerCase().replace(/\s+/g, '');
+            return clean === "sheet4" || clean.endsWith("sheet4");
+          });
+
+          // Fallback jika bernama 'Sheet 4' atau berada di urutan posisi tab ke-4
+          if (!targetSheetName) {
+            targetSheetName = workbook.SheetNames[3] || workbook.SheetNames.find(n => n.includes("4"));
+          }
+
+          if (!targetSheetName) {
+            throw new Error("Sheet4 tidak ditemukan pada file Excel ini.");
+          }
+
+          const sheet = workbook.Sheets[targetSheetName];
+          const jsonMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+
+          // Process matrix data
+          processExcelData(jsonMatrix);
+
+          const now = new Date();
+          statusEl.innerText = `Berhasil memuat Sheet4 (${targetSheetName}) pada ${now.toLocaleTimeString('id-ID')} WIB`;
+          statusEl.style.color = "#10b981";
+        })
+        .catch(err => {
+          console.error(err);
+          statusEl.innerText = `Gagal memuat: ${err.message}`;
+          statusEl.style.color = "#f43f5e";
+        });
+    }
+
+    function processExcelData(matrix) {
+      if (!matrix || matrix.length === 0) return;
+
+      let title = "";
+      let period = "";
+      let lastUpdate = "";
+      let excelDateReport = "";
+      let tableHeaderIdx = -1;
+
+      // Scan header metadata dan letak tabel 'WITEL'
+      for (let r = 0; r < matrix.length; r++) {
+        const row = matrix[r];
+        if (!row) continue;
+        
+        const rowStr = row.map(cell => String(cell || "")).join(" ");
+
+        if (rowStr.toUpperCase().includes("PROVISIONING NEW SALES")) {
+          title = rowStr.trim();
+        }
+        if (rowStr.toUpperCase().includes("PERIODE ORDER")) {
+          period = rowStr.substring(rowStr.toUpperCase().indexOf("PERIODE ORDER")).trim();
+          period = period.replace(/PERIODE ORDER & PS :/i, "").trim();
+        }
+        if (rowStr.toLowerCase().includes("last update")) {
+          lastUpdate = rowStr.substring(rowStr.toLowerCase().indexOf("last update")).trim();
+          lastUpdate = lastUpdate.replace(/Last Update Proses :/i, "").trim();
+          
+          const dateMatch = lastUpdate.match(/(\d{2})[-/](\d{2})[-/](\d{4})/);
+          if (dateMatch) {
+            excelDateReport = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+          }
+        }
+
+        for (let c = 0; c < row.length; c++) {
+          if (row[c] && String(row[c]).trim().toUpperCase() === "WITEL") {
+            tableHeaderIdx = r;
+            break;
+          }
+        }
+        if (tableHeaderIdx !== -1) break;
+      }
+
+      if (title) document.getElementById('reportTitle').innerText = title;
+      if (period) document.getElementById('reportPeriod').innerText = period;
+      if (lastUpdate) document.getElementById('reportUpdate').innerText = lastUpdate;
+      if (excelDateReport) document.getElementById('reportDate').innerText = excelDateReport;
+
+      if (tableHeaderIdx === -1) {
+        alert("Kolom 'WITEL' tidak ditemukan pada Sheet4.");
+        return;
+      }
+
+      const primaryHeaderRow = matrix[tableHeaderIdx];
+      const colMap = {};
+      
+      // Deteksi Pemetaan Kolom
+      primaryHeaderRow.forEach((colCell, idx) => {
+        let colName = String(colCell || "").trim().toUpperCase();
+        
+        if (!colName && tableHeaderIdx > 0) colName = String(matrix[tableHeaderIdx - 1][idx] || "").trim().toUpperCase();
+        if (!colName && tableHeaderIdx + 1 < matrix.length) colName = String(matrix[tableHeaderIdx + 1][idx] || "").trim().toUpperCase();
+
+        if (colName.includes("WITEL")) colMap.witel = idx;
+        else if (colName.includes("TOTAL RE") || colName === "RE") colMap.totalRe = idx;
+        else if (colName.includes("PRE PI")) colMap.prePi = idx;
+        else if (colName === "TOTAL PI" || colName === "PI") colMap.pi = idx;
+        else if (colName.includes("FALLOUT")) colMap.fallout = idx;
+        else if (colName.includes("QC2") || colName.includes("ACT COMP")) colMap.qc2 = idx;
+        else if (colName.includes("JML COMP") || colName === "PS") colMap.ps = idx;
+        else if (colName.includes("PS/RE")) colMap.psRe = idx;
+        else if (colName.includes("PS/PI")) colMap.psPi = idx;
+        else if (colName.includes("TTI")) colMap.tti = idx;
+      });
+
+      const cleanNum = (val) => {
+        if (val === undefined || val === null || val === "") return 0;
+        if (typeof val === 'number') return val;
+        let str = String(val).replace(/,/g, '').replace(/%/g, '').trim();
+        let num = parseFloat(str);
+        return isNaN(num) ? 0 : num;
+      };
+
+      const rowsData = [];
+      let totalRow = null;
+
+      for (let r = tableHeaderIdx + 1; r < matrix.length; r++) {
+        const row = matrix[r];
+        if (!row || row.length === 0) continue;
+
+        const witelVal = String(row[colMap.witel] || "").trim();
+        if (!witelVal) continue;
+
+        const uppercaseWitel = witelVal.toUpperCase();
+
+        if (uppercaseWitel.includes("KETERANGAN") || uppercaseWitel.includes("NOTE") || uppercaseWitel.includes("SLA WISA")) {
+          break;
+        }
+
+        const item = {
+          witel: witelVal,
+          totalRe: colMap.totalRe !== undefined ? cleanNum(row[colMap.totalRe]) : 0,
+          prePi: cleanNum(row[colMap.prePi]),
+          pi: cleanNum(row[colMap.pi]),
+          fallout: cleanNum(row[colMap.fallout]),
+          qc2: cleanNum(row[colMap.qc2]),
+          ps: cleanNum(row[colMap.ps]),
+          psRe: colMap.psRe !== undefined ? row[colMap.psRe] : 0,
+          psPi: colMap.psPi !== undefined ? row[colMap.psPi] : 0,
+          tti: colMap.tti !== undefined ? row[colMap.tti] : 1.0
+        };
+
+        if (uppercaseWitel === "TOTAL" || uppercaseWitel.includes("TOTAL REGIONAL")) {
+          totalRow = item;
+          break;
+        } else {
+          rowsData.push(item);
+        }
+      }
+
+      const sumTotalRE = totalRow ? totalRow.totalRe : rowsData.reduce((acc, cur) => acc + cur.totalRe, 0);
+      const sumPI = totalRow ? totalRow.pi : rowsData.reduce((acc, cur) => acc + cur.pi, 0);
+      const sumQC2 = totalRow ? totalRow.qc2 : rowsData.reduce((acc, cur) => acc + cur.qc2, 0);
+      const sumFallout = totalRow ? totalRow.fallout : rowsData.reduce((acc, cur) => acc + cur.fallout, 0);
+      const sumPS = totalRow ? totalRow.ps : rowsData.reduce((acc, cur) => acc + cur.ps, 0);
+
+      document.getElementById('cardTotalRE').innerText = sumTotalRE.toLocaleString('id-ID');
+      document.getElementById('cardPI').innerText = sumPI.toLocaleString('id-ID');
+      document.getElementById('cardQC2').innerText = sumQC2.toLocaleString('id-ID');
+      document.getElementById('cardFallout').innerText = sumFallout.toLocaleString('id-ID');
+      document.getElementById('cardPS').innerText = sumPS.toLocaleString('id-ID');
+
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = "";
+
+      const formatPercent = (val) => {
+        if (val === undefined || val === null || val === "") return "0.00%";
+        let num = cleanNum(val);
+        if (num <= 1 && num > 0) num = num * 100;
+        return num.toFixed(2) + "%";
+      };
+
+      rowsData.forEach(item => {
+        const tr = document.createElement('tr');
+
+        const psReFormatted = formatPercent(item.psRe);
+        const psPiFormatted = formatPercent(item.psPi);
+        const ttiFormatted = formatPercent(item.tti);
+
+        const psReNum = parseFloat(psReFormatted);
+        const psPiNum = parseFloat(psPiFormatted);
+        const ttiNum = parseFloat(ttiFormatted);
+
+        const psReClass = (!isNaN(psReNum) && psReNum >= 80) ? "green" : "red";
+        const psPiClass = (!isNaN(psPiNum) && psPiNum >= 94) ? "green" : "red";
+        const ttiClass = (!isNaN(ttiNum) && ttiNum >= 94) ? "green" : "red";
+
+        tr.innerHTML = `
+          <td class="witel">${item.witel}</td>
+          <td>${item.totalRe.toLocaleString('id-ID')}</td>
+          <td>${item.prePi.toLocaleString('id-ID')}</td>
+          <td>${item.pi.toLocaleString('id-ID')}</td>
+          <td>${item.fallout.toLocaleString('id-ID')}</td>
+          <td>${item.qc2.toLocaleString('id-ID')}</td>
+          <td>${item.ps.toLocaleString('id-ID')}</td>
+          <td class="${psReClass}">${psReFormatted}</td>
+          <td class="${psPiClass}">${psPiFormatted}</td>
+          <td class="${ttiClass}">${ttiFormatted}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const barLabels = rowsData.map(d => d.witel);
+      const barData = rowsData.map(d => d.ps);
+      const totPrePi = totalRow ? totalRow.prePi : rowsData.reduce((a, b) => a + b.prePi, 0);
+
+      initCharts(barLabels, barData, [totPrePi, sumPI, sumFallout, sumQC2, sumPS]);
+    }
+
+    // Jalankan auto-fetch saat pertama kali halaman terbuka
+    window.addEventListener('DOMContentLoaded', fetchDataFromGitHub);
+  </script>
+</body>
+</html>
