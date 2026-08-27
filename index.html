@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Provisioning New Sales Indibiz TR3 JBN</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    # Font Awesome
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS (xlsx) for reading excel files directly -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.min.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body {
@@ -18,7 +15,7 @@
             background-color: #f8fafc;
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(226, 232, 240, 0.8);
         }
@@ -26,7 +23,6 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Header -->
     <header class="bg-gradient-to-r from-red-700 via-red-600 to-rose-700 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -44,11 +40,10 @@
                     </div>
                 </div>
                 
-                <!-- Github & Input Config -->
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="relative flex-1 sm:w-80">
                         <input type="text" id="github-url" 
-                               value="https://raw.githubusercontent.com/USERNAME/REPO/main/data.xlsx" 
+                               value="https://raw.githubusercontent.com/dediriant3-a11y/dashboard-ReportJBN/main/data.xlsx" 
                                placeholder="URL Raw GitHub data.xlsx" 
                                class="w-full pl-9 pr-3 py-2 text-xs text-slate-900 rounded-lg border-0 shadow-inner focus:ring-2 focus:ring-red-300 font-mono">
                         <i class="fa-brands fa-github absolute left-3 top-2.5 text-slate-400 text-sm"></i>
@@ -66,15 +61,11 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-        <!-- Notification / Status Banner -->
         <div id="status-message" class="hidden p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm"></div>
 
-        <!-- KPI Cards Grid -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-            <!-- Card 1: TOTAL RE -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL RE</span>
@@ -84,7 +75,6 @@
                 <div class="text-xs text-slate-500 mt-1">Register Total</div>
             </div>
 
-            <!-- Card 2: TOTAL PI -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL PI</span>
@@ -94,7 +84,6 @@
                 <div class="text-xs text-slate-500 mt-1">Proses Instalasi</div>
             </div>
 
-            <!-- Card 3: TOTAL QC2 -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL QC2</span>
@@ -104,7 +93,6 @@
                 <div class="text-xs text-slate-500 mt-1">Quality Control 2</div>
             </div>
 
-            <!-- Card 4: TOTAL FALLOUT -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL FALLOUT</span>
@@ -114,7 +102,6 @@
                 <div class="text-xs text-slate-500 mt-1">Kendala Instalasi</div>
             </div>
 
-            <!-- Card 5: TOTAL PS -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL PS</span>
@@ -125,7 +112,34 @@
             </div>
         </section>
 
-        <!-- Main Data Table -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 glass-card rounded-2xl p-6 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">Total Provisioning Success (PS) Per Witel</h3>
+                        <p class="text-xs text-slate-500">Perbandingan jumlah order PS sukses antar Witel</p>
+                    </div>
+                    <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg text-sm"><i class="fa-solid fa-chart-column"></i></span>
+                </div>
+                <div class="h-64 sm:h-72">
+                    <canvas id="psBarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">Komposisi Status Order</h3>
+                        <p class="text-xs text-slate-500">Persentase tahapan status order regional</p>
+                    </div>
+                    <span class="p-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm"><i class="fa-solid fa-chart-pie"></i></span>
+                </div>
+                <div class="h-64 sm:h-72 flex items-center justify-center">
+                    <canvas id="statusPieChart"></canvas>
+                </div>
+            </div>
+        </section>
+
         <section class="glass-card rounded-2xl shadow-sm overflow-hidden border border-slate-200">
             <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -148,8 +162,6 @@
                         <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-xs tracking-wider">
                             <th class="py-4 px-4">WITEL</th>
                             <th class="py-4 px-3 text-right">RE</th>
-                            <th class="py-4 px-3 text-right">SURVEY NEW</th>
-                            <th class="py-4 px-3 text-right">UN-SC</th>
                             <th class="py-4 px-3 text-right">PRE PI</th>
                             <th class="py-4 px-3 text-right">PI</th>
                             <th class="py-4 px-3 text-right">FALLOUT</th>
@@ -162,7 +174,7 @@
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700">
                         <tr>
-                            <td colspan="12" class="py-8 text-center text-slate-400">
+                            <td colspan="10" class="py-8 text-center text-slate-400">
                                 <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
                                 <p>Sedang memuat data...</p>
                             </td>
@@ -173,33 +185,30 @@
         </section>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-            &copy; 2026 Dashboard Indibiz TR3 JBN. Automated Real-time Sheet4 Reader.
+            &copy; 2026 Dashboard Indibiz TR3 JBN. Automated Sheet4 Reader.
         </div>
     </footer>
 
-    <!-- JavaScript Script -->
     <script>
-        // Target thresholds
-        const TARGET_PS_RE = 0.80; // 80%
-        const TARGET_PS_PI = 0.94; // 94%
-        const TARGET_TTI = 0.94;   // 94%
+        const TARGET_PS_RE = 0.80; 
+        const TARGET_PS_PI = 0.94; 
+        const TARGET_TTI = 0.94;   
 
-        // Format percentage helper
+        let psBarChartInstance = null;
+        let statusPieChartInstance = null;
+
         function formatPercent(val) {
             if (val === null || val === undefined || isNaN(val)) return '-';
-            return (val * 100).toFixed(2) + '%';
+            return (val * 100).toFixed(2).replace('.', ',') + '%';
         }
 
-        // Format number helper
         function formatNumber(val) {
             if (val === null || val === undefined || isNaN(val)) return '0';
             return Number(val).toLocaleString('id-ID');
         }
 
-        // Get indicator badge HTML based on target
         function getBadgeHtml(value, target) {
             if (value === null || value === undefined || isNaN(value)) return '-';
             const pctText = formatPercent(value);
@@ -216,7 +225,6 @@
             }
         }
 
-        // Show status message
         function showStatus(message, type = 'info') {
             const el = document.getElementById('status-message');
             el.classList.remove('hidden', 'bg-blue-100', 'text-blue-800', 'bg-red-100', 'text-red-800', 'bg-emerald-100', 'text-emerald-800');
@@ -231,7 +239,105 @@
             el.innerHTML = message;
         }
 
-        // Main parser for Workbook data from Sheet4
+        function renderCharts(witelNames, psValues, totalStatusData) {
+            // 1. Render Bar Chart (Grafik Batang PS per Witel)
+            const barCtx = document.getElementById('psBarChart').getContext('2d');
+            if (psBarChartInstance) psBarChartInstance.destroy();
+
+            psBarChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: witelNames,
+                    datasets: [{
+                        label: 'Jumlah Order PS',
+                        data: psValues,
+                        backgroundColor: '#10b981',
+                        hoverBackgroundColor: '#059669',
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Total PS: ${formatNumber(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Plus Jakarta Sans', weight: '600' } }
+                        },
+                        y: {
+                            grid: { color: '#f1f5f9' },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 2. Render Pie Chart (Grafik Komposisi Status)
+            const pieCtx = document.getElementById('statusPieChart').getContext('2d');
+            if (statusPieChartInstance) statusPieChartInstance.destroy();
+
+            statusPieChartInstance = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['PRE PI', 'PI (Proses)', 'Fallout (Kendala)', 'QC2', 'PS (Sukses)'],
+                    datasets: [{
+                        data: [
+                            totalStatusData.prepi,
+                            totalStatusData.pi,
+                            totalStatusData.fallout,
+                            totalStatusData.qc2,
+                            totalStatusData.ps
+                        ],
+                        backgroundColor: [
+                            '#3b82f6', // PRE PI - Blue
+                            '#a855f7', // PI - Purple
+                            '#f43f5e', // Fallout - Rose
+                            '#f59e0b', // QC2 - Amber
+                            '#10b981'  // PS - Emerald
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                font: { family: 'Plus Jakarta Sans', size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const pct = total ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                                    return ` ${context.label}: ${formatNumber(value)} (${pct})`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
         function processWorkbook(workbook) {
             try {
                 if (!workbook.SheetNames.includes('Sheet4')) {
@@ -240,76 +346,97 @@
                 }
 
                 const sheet = workbook.Sheets['Sheet4'];
-                const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
 
-                // Find header info and rows
                 let subtitle = "";
-                let dataRows = [];
                 let headersRowIdx = -1;
+                let colIndices = {};
 
+                // Find header row dynamically
                 for (let i = 0; i < jsonData.length; i++) {
-                    const row = jsonData[i];
-                    const rowStr = row.join(' ');
-                    
+                    const row = jsonData[i] || [];
+                    const rowStr = row.map(c => String(c || '')).join(' ');
+
                     if (rowStr.includes('PERIODE ORDER & PS')) {
-                        const cellVal = row.find(c => c && c.toString().includes('PERIODE ORDER'));
+                        const cellVal = row.find(c => c && String(c).includes('PERIODE ORDER'));
                         if (cellVal) subtitle += cellVal + " | ";
                     }
                     if (rowStr.includes('Last update proses')) {
-                        const cellVal = row.find(c => c && c.toString().includes('Last update'));
+                        const cellVal = row.find(c => c && String(c).includes('Last update'));
                         if (cellVal) subtitle += cellVal;
                     }
 
-                    if (rowStr.includes('WITEL') && rowStr.includes('REGISTER (RE)')) {
-                        headersRowIdx = i;
+                    // Check if row has column headers
+                    for (let j = 0; j < row.length; j++) {
+                        const cell = String(row[j] || '').trim();
+                        if (cell === 'WITEL') headersRowIdx = i;
                     }
+                }
+
+                if (headersRowIdx === -1) {
+                    showStatus('<i class="fa-solid fa-triangle-exclamation mr-2"></i> Baris header WITEL tidak ditemukan!', 'error');
+                    return;
+                }
+
+                // Map header column names to column index
+                const headerRow = jsonData[headersRowIdx];
+                for (let j = 0; j < headerRow.length; j++) {
+                    const cell = String(headerRow[j] || '').trim().toUpperCase();
+                    if (cell.includes('WITEL')) colIndices['WITEL'] = j;
+                    else if (cell.includes('REGISTER') || cell === 'RE') colIndices['RE'] = j;
+                    else if (cell.includes('PRE PI')) colIndices['PREPI'] = j;
+                    else if (cell === 'PI' || cell.includes(' PI ')) colIndices['PI'] = j;
+                    else if (cell.includes('FALLOUT')) colIndices['FALLOUT'] = j;
+                    else if (cell.includes('QC2')) colIndices['QC2'] = j;
+                    else if (cell === 'PS') colIndices['PS'] = j;
+                    else if (cell.includes('PS/RE')) colIndices['PS_RE'] = j;
+                    else if (cell.includes('PS/PI')) colIndices['PS_PI'] = j;
+                    else if (cell.includes('TTI')) colIndices['TTI'] = j;
                 }
 
                 if (subtitle) {
                     document.getElementById('subtitle-info').innerHTML = `<i class="fa-regular fa-clock"></i> ${subtitle}`;
                 }
 
-                // Process data starting after header row
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
 
-                let totalRE = 0, totalPI = 0, totalQC2 = 0, totalFallout = 0, totalPS = 0;
+                let totalRE = 0, totalPREPI = 0, totalPI = 0, totalQC2 = 0, totalFallout = 0, totalPS = 0;
+                
+                const witelNames = [];
+                const psValues = [];
 
                 for (let i = headersRowIdx + 1; i < jsonData.length; i++) {
-                    const row = jsonData[i];
-                    // Skip empty rows
-                    const nonNullCols = row.filter(c => c !== null && c !== undefined && c !== '');
-                    if (nonNullCols.length < 3) continue;
+                    const row = jsonData[i] || [];
+                    const witelVal = row[colIndices['WITEL']];
+                    if (!witelVal) continue;
 
-                    // Row structure mapping (based on Sheet4 structure):
-                    // Col 2: Witel, Col 3: RE, Col 4: Survey, Col 5: UN-SC, Col 6: Pre PI, Col 7: PI, Col 8: Fallout, Col 9: QC2, Col 10: PS, Col 11: PS/RE, Col 12: PS/PI, Col 13: TTI
-                    const witel = row[2];
-                    if (!witel) continue;
+                    const witel = String(witelVal).trim();
+                    const re = Number(row[colIndices['RE']]) || 0;
+                    const prepi = Number(row[colIndices['PREPI']]) || 0;
+                    const pi = Number(row[colIndices['PI']]) || 0;
+                    const fallout = Number(row[colIndices['FALLOUT']]) || 0;
+                    const qc2 = Number(row[colIndices['QC2']]) || 0;
+                    const ps = Number(row[colIndices['PS']]) || 0;
 
-                    const re = Number(row[3]) || 0;
-                    const survey = Number(row[4]) || 0;
-                    const unsc = Number(row[5]) || 0;
-                    const prepi = Number(row[6]) || 0;
-                    const pi = Number(row[7]) || 0;
-                    const fallout = Number(row[8]) || 0;
-                    const qc2 = Number(row[9]) || 0;
-                    const ps = Number(row[10]) || 0;
-                    
-                    const ps_re = row[11] !== undefined ? Number(row[11]) : (re ? ps/re : 0);
-                    const ps_pi = row[12] !== undefined ? Number(row[12]) : (pi ? ps/pi : 0);
-                    const tti = row[13] !== undefined ? Number(row[13]) : 0;
+                    const ps_re = row[colIndices['PS_RE']] !== undefined ? Number(row[colIndices['PS_RE']]) : (re ? ps/re : 0);
+                    const ps_pi = row[colIndices['PS_PI']] !== undefined ? Number(row[colIndices['PS_PI']]) : (pi ? ps/pi : 0);
+                    const tti = row[colIndices['TTI']] !== undefined ? Number(row[colIndices['TTI']]) : 0;
 
-                    const isTotalRow = witel.toString().trim().toUpperCase() === 'TOTAL';
+                    const isTotalRow = witel.toUpperCase() === 'TOTAL';
 
                     if (isTotalRow) {
                         totalRE = re;
+                        totalPREPI = prepi;
                         totalPI = pi;
                         totalQC2 = qc2;
                         totalFallout = fallout;
                         totalPS = ps;
+                    } else {
+                        witelNames.push(witel);
+                        psValues.push(ps);
                     }
 
-                    // Render table row
                     const tr = document.createElement('tr');
                     if (isTotalRow) {
                         tr.className = "bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-300";
@@ -320,8 +447,6 @@
                     tr.innerHTML = `
                         <td class="py-3.5 px-4 font-bold">${witel}</td>
                         <td class="py-3.5 px-3 text-right font-semibold">${formatNumber(re)}</td>
-                        <td class="py-3.5 px-3 text-right text-slate-600">${formatNumber(survey)}</td>
-                        <td class="py-3.5 px-3 text-right text-slate-600">${formatNumber(unsc)}</td>
                         <td class="py-3.5 px-3 text-right text-slate-600">${formatNumber(prepi)}</td>
                         <td class="py-3.5 px-3 text-right font-semibold text-purple-700">${formatNumber(pi)}</td>
                         <td class="py-3.5 px-3 text-right font-semibold text-rose-600">${formatNumber(fallout)}</td>
@@ -341,6 +466,15 @@
                 document.getElementById('kpi-fallout').innerText = formatNumber(totalFallout);
                 document.getElementById('kpi-ps').innerText = formatNumber(totalPS);
 
+                // Render Visualisasi Grafik Batang & Pie
+                renderCharts(witelNames, psValues, {
+                    prepi: totalPREPI,
+                    pi: totalPI,
+                    fallout: totalFallout,
+                    qc2: totalQC2,
+                    ps: totalPS
+                });
+
                 showStatus('<i class="fa-solid fa-circle-check mr-2"></i> Data berhasil dimuat dan diperbarui dari Sheet4!', 'success');
 
             } catch (err) {
@@ -349,7 +483,6 @@
             }
         }
 
-        // Fetch Data from GitHub
         async function fetchDataFromGitHub() {
             const url = document.getElementById('github-url').value.trim();
             const syncIcon = document.getElementById('btn-sync-icon');
@@ -358,35 +491,18 @@
             showStatus('<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengunduh file dari GitHub...', 'info');
 
             try {
-                const response = await fetch(url);
+                const response = await fetch(url + '?v=' + new Date().getTime());
                 if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
                 const data = await response.arrayBuffer();
                 const workbook = XLSX.read(data, { type: 'array' });
                 processWorkbook(workbook);
             } catch (err) {
-                showStatus(`<i class="fa-solid fa-triangle-exclamation mr-2"></i> Gagal mengambil data dari GitHub: ${err.message}. Mencoba membaca file 'data.xlsx' lokal...`, 'error');
-                // Fallback attempt to load local file data.xlsx
-                fetchLocalDefault();
+                showStatus(`<i class="fa-solid fa-triangle-exclamation mr-2"></i> Gagal mengambil data dari GitHub: ${err.message}`, 'error');
             } finally {
                 syncIcon.classList.remove('fa-spin');
             }
         }
 
-        // Fallback fetch default local file data.xlsx
-        async function fetchLocalDefault() {
-            try {
-                const response = await fetch('data.xlsx');
-                if (response.ok) {
-                    const data = await response.arrayBuffer();
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    processWorkbook(workbook);
-                }
-            } catch (e) {
-                console.log("Local fetch failed or file not in server root");
-            }
-        }
-
-        // Handle Manual Upload
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -400,7 +516,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // Initial Auto-load attempt on page load
         window.addEventListener('DOMContentLoaded', () => {
             fetchDataFromGitHub();
         });
