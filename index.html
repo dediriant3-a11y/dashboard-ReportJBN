@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Provisioning New Sales Indibiz TR3 JBN MTD H-1</title>
+    <title>PROVISIONING NEW SALES INDIBIZ TR3 JBN MTD H-1</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (xlsx) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -23,23 +27,32 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
+    <!-- Header -->
     <header class="bg-gradient-to-r from-red-700 via-red-600 to-rose-700 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <div class="flex items-center space-x-3">
-                        <span class="bg-white/20 p-2.5 rounded-xl backdrop-blur-md">
+                <div class="w-full md:w-auto">
+                    <div class="flex items-start space-x-3">
+                        <span class="bg-white/20 p-2.5 rounded-xl backdrop-blur-md mt-1 flex-shrink-0">
                             <i class="fa-solid fa-chart-line text-2xl"></i>
                         </span>
-                        <div>
-                            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">PROVISIONING NEW SALES INDIBIZ TR3 JBN</h1>
-                            <p class="text-red-100 text-sm mt-0.5 flex items-center gap-2" id="subtitle-info">
-                                <i class="fa-regular fa-clock"></i> Memuat data...
-                            </p>
+                        <div class="flex-1">
+                            <!-- Judul Utama 1 Baris Utuh -->
+                            <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight uppercase whitespace-nowrap">
+                                PROVISIONING NEW SALES INDIBIZ TR3 JBN MTD H-1
+                            </h1>
+                            
+                            <!-- Subtitle Detail 3 Baris -->
+                            <div class="text-red-100 text-xs sm:text-sm mt-1 space-y-0.5" id="subtitle-info">
+                                <p id="info-tgl-report"><i class="fa-regular fa-calendar-check mr-1"></i> Tanggal Report : -</p>
+                                <p id="info-periode"><i class="fa-regular fa-clock mr-1"></i> PERIODE ORDER & PS : -</p>
+                                <p id="info-last-update"><i class="fa-solid fa-rotate mr-1"></i> Last update proses : -</p>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
+                <!-- Github & Input Config -->
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="relative flex-1 sm:w-80">
                         <input type="text" id="github-url" 
@@ -61,11 +74,15 @@
         </div>
     </header>
 
+    <!-- Main Content -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
+        <!-- Notification Banner -->
         <div id="status-message" class="hidden p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm"></div>
 
+        <!-- KPI Cards Grid -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+            <!-- Card 1: TOTAL RE -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL RE</span>
@@ -75,33 +92,37 @@
                 <div class="text-xs text-slate-500 mt-1">Register Total</div>
             </div>
 
+            <!-- Card 2: TOTAL PI -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL PI</span>
                     <span class="p-2 bg-purple-50 text-purple-600 rounded-lg"><i class="fa-solid fa-spinner"></i></span>
                 </div>
                 <div class="text-3xl font-extrabold text-slate-900" id="kpi-pi">0</div>
-                <div class="text-xs text-slate-500 mt-1">Proses Instalasi</div>
+                <div class="text-xs text-slate-500 mt-1">Provisioning Issued</div>
             </div>
 
+            <!-- Card 3: TOTAL QC2 -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL QC2</span>
                     <span class="p-2 bg-amber-50 text-amber-600 rounded-lg"><i class="fa-solid fa-list-check"></i></span>
                 </div>
                 <div class="text-3xl font-extrabold text-slate-900" id="kpi-qc2">0</div>
-                <div class="text-xs text-slate-500 mt-1">Quality Control 2</div>
+                <div class="text-xs text-slate-500 mt-1">Quality Control</div>
             </div>
 
+            <!-- Card 4: TOTAL FALLOUT -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL FALLOUT</span>
                     <span class="p-2 bg-rose-50 text-rose-600 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></span>
                 </div>
                 <div class="text-3xl font-extrabold text-rose-600" id="kpi-fallout">0</div>
-                <div class="text-xs text-slate-500 mt-1">Kendala Instalasi</div>
+                <div class="text-xs text-slate-500 mt-1">Kendala</div>
             </div>
 
+            <!-- Card 5: TOTAL PS -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL PS</span>
@@ -112,7 +133,9 @@
             </div>
         </section>
 
+        <!-- Charts Section (Grafik Batang & Pie Chart) -->
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Grafik Batang PS per Witel -->
             <div class="lg:col-span-2 glass-card rounded-2xl p-6 shadow-sm border border-slate-200">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -126,6 +149,7 @@
                 </div>
             </div>
 
+            <!-- Grafik Pie Komposisi Status -->
             <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -140,10 +164,11 @@
             </div>
         </section>
 
+        <!-- Main Data Table -->
         <section class="glass-card rounded-2xl shadow-sm overflow-hidden border border-slate-200">
             <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-900">Rincian Per Witel (Sheet4)</h2>
+                    <h2 class="text-lg font-bold text-slate-900">Rincian Per Witel</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Monitoring performa pengerjaan order per Witel beserta persentase target pencapaian.</p>
                 </div>
                 <div class="flex items-center gap-3">
@@ -183,14 +208,30 @@
                 </table>
             </div>
         </section>
+
+        <!-- Keterangan SLA WISA 2026 -->
+        <section class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200">
+            <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-red-600"></i> * SLA WISA 2026
+            </h3>
+            <ol class="list-decimal list-inside text-xs text-slate-700 space-y-1.5 font-medium">
+                <li><span class="font-semibold text-slate-900">TTI Compliance HSI (AO/MO)</span> | 1x24 jam 94%</li>
+                <li><span class="font-semibold text-slate-900">Compliance Order Aging (AOSODOMORO)</span> 3x24 jam 90%</li>
+                <li><span class="font-semibold text-slate-900">PS to PI Ratio HSI (AO/MO/PDA)</span> 94%</li>
+                <li><span class="font-semibold text-slate-900">Fallout Order HSI (AOSODOMORO)</span> 1x12 jam &gt; 90%</li>
+            </ol>
+        </section>
+
     </main>
 
+    <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
             &copy; 2026 Dashboard Indibiz TR3 JBN. Automated Sheet4 Reader.
         </div>
     </footer>
 
+    <!-- JavaScript Script -->
     <script>
         const TARGET_PS_RE = 0.80; 
         const TARGET_PS_PI = 0.94; 
@@ -237,6 +278,13 @@
                 el.classList.add('bg-blue-100', 'text-blue-800');
             }
             el.innerHTML = message;
+
+            // Otomatis menyembunyikan banner setelah 3 detik jika status sukses
+            if (type === 'success') {
+                setTimeout(() => {
+                    el.classList.add('hidden');
+                }, 3000);
+            }
         }
 
         function renderCharts(witelNames, psValues, totalStatusData) {
@@ -300,11 +348,11 @@
                             totalStatusData.ps
                         ],
                         backgroundColor: [
-                            '#3b82f6', // PRE PI - Blue
-                            '#a855f7', // PI - Purple
-                            '#f43f5e', // Fallout - Rose
-                            '#f59e0b', // QC2 - Amber
-                            '#10b981'  // PS - Emerald
+                            '#3b82f6', 
+                            '#a855f7', 
+                            '#f43f5e', 
+                            '#f59e0b', 
+                            '#10b981'  
                         ],
                         borderWidth: 2,
                         borderColor: '#ffffff'
@@ -348,22 +396,28 @@
                 const sheet = workbook.Sheets['Sheet4'];
                 const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
 
-                let subtitle = "";
+                let tglReportVal = "";
+                let periodeVal = "";
+                let lastUpdateVal = "";
                 let headersRowIdx = -1;
                 let colIndices = {};
 
-                // Find header row dynamically
+                // Find header row dynamically and extract header info
                 for (let i = 0; i < jsonData.length; i++) {
                     const row = jsonData[i] || [];
                     const rowStr = row.map(c => String(c || '')).join(' ');
 
+                    if (rowStr.includes('Tanggal Report')) {
+                        const cellVal = row.find(c => c && String(c).includes('Tanggal Report'));
+                        if (cellVal) tglReportVal = cellVal;
+                    }
                     if (rowStr.includes('PERIODE ORDER & PS')) {
                         const cellVal = row.find(c => c && String(c).includes('PERIODE ORDER'));
-                        if (cellVal) subtitle += cellVal + " | ";
+                        if (cellVal) periodeVal = cellVal;
                     }
                     if (rowStr.includes('Last update proses')) {
                         const cellVal = row.find(c => c && String(c).includes('Last update'));
-                        if (cellVal) subtitle += cellVal;
+                        if (cellVal) lastUpdateVal = cellVal;
                     }
 
                     // Check if row has column headers
@@ -377,6 +431,11 @@
                     showStatus('<i class="fa-solid fa-triangle-exclamation mr-2"></i> Baris header WITEL tidak ditemukan!', 'error');
                     return;
                 }
+
+                // Update Header Subtitle Info
+                document.getElementById('info-tgl-report').innerHTML = `<i class="fa-regular fa-calendar-check mr-1"></i> ${tglReportVal || 'Tanggal Report : 2026-08-27'}`;
+                document.getElementById('info-periode').innerHTML = `<i class="fa-regular fa-clock mr-1"></i> ${periodeVal || 'PERIODE ORDER & PS : 2026-08-01 to 2026-08-26'}`;
+                document.getElementById('info-last-update').innerHTML = `<i class="fa-solid fa-rotate mr-1"></i> ${lastUpdateVal || 'Last update proses : 26-08-2026 07:34:14 WIB (Source: ETL XPRO)'}`;
 
                 // Map header column names to column index
                 const headerRow = jsonData[headersRowIdx];
@@ -392,10 +451,6 @@
                     else if (cell.includes('PS/RE')) colIndices['PS_RE'] = j;
                     else if (cell.includes('PS/PI')) colIndices['PS_PI'] = j;
                     else if (cell.includes('TTI')) colIndices['TTI'] = j;
-                }
-
-                if (subtitle) {
-                    document.getElementById('subtitle-info').innerHTML = `<i class="fa-regular fa-clock"></i> ${subtitle}`;
                 }
 
                 const tbody = document.getElementById('table-body');
