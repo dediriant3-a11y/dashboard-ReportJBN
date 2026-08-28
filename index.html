@@ -250,6 +250,14 @@
             return Number(val).toLocaleString('id-ID');
         }
 
+        // Helper untuk format tanggal YYYY-MM-DD
+        function getFormattedDate(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
         function getBadgeHtml(value, target) {
             if (value === null || value === undefined || isNaN(value)) return '-';
             const pctText = formatPercent(value);
@@ -279,7 +287,6 @@
             }
             el.innerHTML = message;
 
-            // Otomatis menyembunyikan banner setelah 3 detik jika status sukses
             if (type === 'success') {
                 setTimeout(() => {
                     el.classList.add('hidden');
@@ -288,7 +295,6 @@
         }
 
         function renderCharts(witelNames, psValues, totalStatusData) {
-            // 1. Render Bar Chart (Grafik Batang PS per Witel)
             const barCtx = document.getElementById('psBarChart').getContext('2d');
             if (psBarChartInstance) psBarChartInstance.destroy();
 
@@ -331,7 +337,6 @@
                 }
             });
 
-            // 2. Render Pie Chart (Grafik Komposisi Status)
             const pieCtx = document.getElementById('statusPieChart').getContext('2d');
             if (statusPieChartInstance) statusPieChartInstance.destroy();
 
@@ -347,13 +352,7 @@
                             totalStatusData.qc2,
                             totalStatusData.ps
                         ],
-                        backgroundColor: [
-                            '#3b82f6', 
-                            '#a855f7', 
-                            '#f43f5e', 
-                            '#f59e0b', 
-                            '#10b981'  
-                        ],
+                        backgroundColor: ['#3b82f6', '#a855f7', '#f43f5e', '#f59e0b', '#10b981'],
                         borderWidth: 2,
                         borderColor: '#ffffff'
                     }]
@@ -394,7 +393,7 @@
                 }
 
                 const sheet = workbook.Sheets['Sheet4'];
-                const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+                const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
                 let tglReportVal = "";
                 let periodeVal = "";
@@ -402,25 +401,23 @@
                 let headersRowIdx = -1;
                 let colIndices = {};
 
-                // Find header row dynamically and extract header info
                 for (let i = 0; i < jsonData.length; i++) {
                     const row = jsonData[i] || [];
                     const rowStr = row.map(c => String(c || '')).join(' ');
 
-                    if (rowStr.includes('Tanggal Report')) {
-                        const cellVal = row.find(c => c && String(c).includes('Tanggal Report'));
+                    if (rowStr.toLowerCase().includes('tanggal report')) {
+                        const cellVal = row.find(c => c && String(c).toLowerCase().includes('tanggal report'));
                         if (cellVal) tglReportVal = cellVal;
                     }
-                    if (rowStr.includes('PERIODE ORDER & PS')) {
-                        const cellVal = row.find(c => c && String(c).includes('PERIODE ORDER'));
+                    if (rowStr.toLowerCase().includes('periode order')) {
+                        const cellVal = row.find(c => c && String(c).toLowerCase().includes('periode order'));
                         if (cellVal) periodeVal = cellVal;
                     }
-                    if (rowStr.includes('Last update proses')) {
-                        const cellVal = row.find(c => c && String(c).includes('Last update'));
+                    if (rowStr.toLowerCase().includes('last update')) {
+                        const cellVal = row.find(c => c && String(c).toLowerCase().includes('last update'));
                         if (cellVal) lastUpdateVal = cellVal;
                     }
 
-                    // Check if row has column headers
                     for (let j = 0; j < row.length; j++) {
                         const cell = String(row[j] || '').trim();
                         if (cell === 'WITEL') headersRowIdx = i;
@@ -432,12 +429,30 @@
                     return;
                 }
 
-                // Update Header Subtitle Info
-                document.getElementById('info-tgl-report').innerHTML = `<i class="fa-regular fa-calendar-check mr-1"></i> ${tglReportVal || 'Tanggal Report : 2026-08-27'}`;
-                document.getElementById('info-periode').innerHTML = `<i class="fa-regular fa-clock mr-1"></i> ${periodeVal || 'PERIODE ORDER & PS : 2026-08-01 to 2026-08-26'}`;
-                document.getElementById('info-last-update').innerHTML = `<i class="fa-solid fa-rotate mr-1"></i> ${lastUpdateVal || 'Last update proses : 26-08-2026 07:34:14 WIB (Source: ETL XPRO)'}`;
+                // Mengambil tanggal hari ini (sama dengan tanggal Last update / Tanggal sistem)
+                const today = new Date();
+                const todayFormatted = getFormattedDate(today);
+                const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-                // Map header column names to column index
+                // Jika tanggal dari Last Update ditemukan di Excel, ekstrak string tanggalnya (YYYY-MM-DD atau DD-MM-YYYY)
+                let extractedLastUpdateDate = todayFormatted;
+                if (lastUpdateVal) {
+                    const match = lastUpdateVal.match(/(\d{2,4}[-\/]\d{2}[-\/]\d{2,4})/);
+                    if (match) {
+                        extractedLastUpdateDate = match[1];
+                    }
+                }
+
+                // Fallback default menyamakan Tanggal Report dengan tanggal Last Update / Hari ini
+                const defaultTglReport = `Tanggal Report : ${extractedLastUpdateDate}`;
+                const defaultPeriode = `PERIODE ORDER & PS : ${getFormattedDate(firstDayOfMonth)} to ${extractedLastUpdateDate}`;
+                const defaultLastUpdate = `Last update proses : ${todayFormatted} (Source: ETL XPRO)`;
+
+                // Update info ke Subtitle Header
+                document.getElementById('info-tgl-report').innerHTML = `<i class="fa-regular fa-calendar-check mr-1"></i> ${tglReportVal || defaultTglReport}`;
+                document.getElementById('info-periode').innerHTML = `<i class="fa-regular fa-clock mr-1"></i> ${periodeVal || defaultPeriode}`;
+                document.getElementById('info-last-update').innerHTML = `<i class="fa-solid fa-rotate mr-1"></i> ${lastUpdateVal || defaultLastUpdate}`;
+
                 const headerRow = jsonData[headersRowIdx];
                 for (let j = 0; j < headerRow.length; j++) {
                     const cell = String(headerRow[j] || '').trim().toUpperCase();
@@ -457,7 +472,6 @@
                 tbody.innerHTML = '';
 
                 let totalRE = 0, totalPREPI = 0, totalPI = 0, totalQC2 = 0, totalFallout = 0, totalPS = 0;
-                
                 const witelNames = [];
                 const psValues = [];
 
@@ -467,16 +481,22 @@
                     if (!witelVal) continue;
 
                     const witel = String(witelVal).trim();
-                    const re = Number(row[colIndices['RE']]) || 0;
-                    const prepi = Number(row[colIndices['PREPI']]) || 0;
-                    const pi = Number(row[colIndices['PI']]) || 0;
-                    const fallout = Number(row[colIndices['FALLOUT']]) || 0;
-                    const qc2 = Number(row[colIndices['QC2']]) || 0;
-                    const ps = Number(row[colIndices['PS']]) || 0;
+                    const parseNum = (val) => {
+                        if (!val) return 0;
+                        let clean = String(val).replace(/,/g, '');
+                        return parseFloat(clean) || 0;
+                    };
 
-                    const ps_re = row[colIndices['PS_RE']] !== undefined ? Number(row[colIndices['PS_RE']]) : (re ? ps/re : 0);
-                    const ps_pi = row[colIndices['PS_PI']] !== undefined ? Number(row[colIndices['PS_PI']]) : (pi ? ps/pi : 0);
-                    const tti = row[colIndices['TTI']] !== undefined ? Number(row[colIndices['TTI']]) : 0;
+                    const re = parseNum(row[colIndices['RE']]);
+                    const prepi = parseNum(row[colIndices['PREPI']]);
+                    const pi = parseNum(row[colIndices['PI']]);
+                    const fallout = parseNum(row[colIndices['FALLOUT']]);
+                    const qc2 = parseNum(row[colIndices['QC2']]);
+                    const ps = parseNum(row[colIndices['PS']]);
+
+                    const ps_re = row[colIndices['PS_RE']] !== undefined ? parseNum(row[colIndices['PS_RE']]) : (re ? ps/re : 0);
+                    const ps_pi = row[colIndices['PS_PI']] !== undefined ? parseNum(row[colIndices['PS_PI']]) : (pi ? ps/pi : 0);
+                    const tti = row[colIndices['TTI']] !== undefined ? parseNum(row[colIndices['TTI']]) : 0;
 
                     const isTotalRow = witel.toUpperCase() === 'TOTAL';
 
@@ -493,11 +513,9 @@
                     }
 
                     const tr = document.createElement('tr');
-                    if (isTotalRow) {
-                        tr.className = "bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-300";
-                    } else {
-                        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-                    }
+                    tr.className = isTotalRow 
+                        ? "bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-300"
+                        : "hover:bg-slate-50 transition border-b border-slate-100";
 
                     tr.innerHTML = `
                         <td class="py-3.5 px-4 font-bold">${witel}</td>
@@ -514,14 +532,12 @@
                     tbody.appendChild(tr);
                 }
 
-                // Update KPI Cards
                 document.getElementById('kpi-re').innerText = formatNumber(totalRE);
                 document.getElementById('kpi-pi').innerText = formatNumber(totalPI);
                 document.getElementById('kpi-qc2').innerText = formatNumber(totalQC2);
                 document.getElementById('kpi-fallout').innerText = formatNumber(totalFallout);
                 document.getElementById('kpi-ps').innerText = formatNumber(totalPS);
 
-                // Render Visualisasi Grafik Batang & Pie
                 renderCharts(witelNames, psValues, {
                     prepi: totalPREPI,
                     pi: totalPI,
