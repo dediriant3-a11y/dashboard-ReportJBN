@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SheetJS (xlsx) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js CDN -->
+    <!-- Chart.js CDN & Plugin Annotation -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body {
@@ -37,12 +38,10 @@
                             <i class="fa-solid fa-chart-line text-2xl"></i>
                         </span>
                         <div class="flex-1">
-                            <!-- Judul Utama 1 Baris Utuh -->
                             <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight uppercase whitespace-nowrap">
                                 PROVISIONING NEW SALES INDIBIZ TR3 JBN MTD H-1
                             </h1>
                             
-                            <!-- Subtitle Detail 3 Baris -->
                             <div class="text-red-100 text-xs sm:text-sm mt-1 space-y-0.5" id="subtitle-info">
                                 <p id="info-tgl-report"><i class="fa-regular fa-calendar-check mr-1"></i> Tanggal Report : -</p>
                                 <p id="info-periode"><i class="fa-regular fa-clock mr-1"></i> PERIODE ORDER & PS : -</p>
@@ -52,7 +51,6 @@
                     </div>
                 </div>
                 
-                <!-- Github & Input Config -->
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="relative flex-1 sm:w-80">
                         <input type="text" id="github-url" 
@@ -82,7 +80,6 @@
 
         <!-- KPI Cards Grid -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-            <!-- Card 1: TOTAL RE -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL RE</span>
@@ -92,7 +89,6 @@
                 <div class="text-xs text-slate-500 mt-1">Register Total</div>
             </div>
 
-            <!-- Card 2: TOTAL PI -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL PI</span>
@@ -102,7 +98,6 @@
                 <div class="text-xs text-slate-500 mt-1">Provisioning Issued</div>
             </div>
 
-            <!-- Card 3: TOTAL QC2 -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL QC2</span>
@@ -112,7 +107,6 @@
                 <div class="text-xs text-slate-500 mt-1">Quality Control</div>
             </div>
 
-            <!-- Card 4: TOTAL FALLOUT -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL FALLOUT</span>
@@ -122,7 +116,6 @@
                 <div class="text-xs text-slate-500 mt-1">Kendala</div>
             </div>
 
-            <!-- Card 5: TOTAL PS -->
             <div class="glass-card rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-center justify-between text-slate-500 mb-2">
                     <span class="text-xs font-bold uppercase tracking-wider">TOTAL PS</span>
@@ -133,14 +126,14 @@
             </div>
         </section>
 
-        <!-- Charts Section (Grafik Batang & Pie Chart) -->
+        <!-- Charts Section -->
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Grafik Batang PS per Witel -->
+            <!-- Grafik Batang Performance TTI COMPLY & PS/PI per Witel -->
             <div class="lg:col-span-2 glass-card rounded-2xl p-6 shadow-sm border border-slate-200">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">Total Provisioning Success (PS) Per Witel</h3>
-                        <p class="text-xs text-slate-500">Perbandingan jumlah order PS sukses antar Witel</p>
+                        <h3 class="text-base font-bold text-slate-900">Pencapaian TTI COMPLY (%) & PS/PI (%) Per Witel</h3>
+                        <p class="text-xs text-slate-500">Perbandingan persentase TTI Comply dan PS/PI terhadap Target 94%</p>
                     </div>
                     <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg text-sm"><i class="fa-solid fa-chart-column"></i></span>
                 </div>
@@ -279,7 +272,6 @@
             }
             el.innerHTML = message;
 
-            // Otomatis menyembunyikan banner setelah 3 detik jika status sukses
             if (type === 'success') {
                 setTimeout(() => {
                     el.classList.add('hidden');
@@ -287,8 +279,8 @@
             }
         }
 
-        function renderCharts(witelNames, psValues, totalStatusData) {
-            // 1. Render Bar Chart (Grafik Batang PS per Witel)
+        function renderCharts(witelNames, ttiValues, psPiValues, totalStatusData) {
+            // 1. Render Bar Chart (TTI COMPLY vs PS/PI Per Witel)
             const barCtx = document.getElementById('psBarChart').getContext('2d');
             if (psBarChartInstance) psBarChartInstance.destroy();
 
@@ -296,24 +288,63 @@
                 type: 'bar',
                 data: {
                     labels: witelNames,
-                    datasets: [{
-                        label: 'Jumlah Order PS',
-                        data: psValues,
-                        backgroundColor: '#10b981',
-                        hoverBackgroundColor: '#059669',
-                        borderRadius: 8,
-                        borderSkipped: false
-                    }]
+                    datasets: [
+                        {
+                            label: 'TTI COMPLY (%)',
+                            data: ttiValues.map(v => (v * 100).toFixed(2)),
+                            backgroundColor: '#6366f1',
+                            hoverBackgroundColor: '#4f46e5',
+                            borderRadius: 6,
+                            borderSkipped: false
+                        },
+                        {
+                            label: 'PS/PI (%)',
+                            data: psPiValues.map(v => (v * 100).toFixed(2)),
+                            backgroundColor: '#10b981',
+                            hoverBackgroundColor: '#059669',
+                            borderRadius: 6,
+                            borderSkipped: false
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
+                        legend: { 
+                            display: true, 
+                            position: 'top',
+                            labels: {
+                                font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
+                                usePointStyle: true,
+                                boxWidth: 8
+                            } 
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return ` Total PS: ${formatNumber(context.raw)}`;
+                                    return ` ${context.dataset.label}: ${context.raw}%`;
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                targetLine: {
+                                    type: 'line',
+                                    yMin: 94,
+                                    yMax: 94,
+                                    borderColor: '#ef4444',
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        display: true,
+                                        content: 'Target SLA (94%)',
+                                        position: 'end',
+                                        backgroundColor: '#ef4444',
+                                        color: '#ffffff',
+                                        font: { size: 10, weight: 'bold', family: 'Plus Jakarta Sans' },
+                                        padding: 4
+                                    }
                                 }
                             }
                         }
@@ -325,7 +356,14 @@
                         },
                         y: {
                             grid: { color: '#f1f5f9' },
-                            beginAtZero: true
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                font: { family: 'Plus Jakarta Sans' }
+                            }
                         }
                     }
                 }
@@ -402,7 +440,6 @@
                 let headersRowIdx = -1;
                 let colIndices = {};
 
-                // Find header row dynamically and extract header info
                 for (let i = 0; i < jsonData.length; i++) {
                     const row = jsonData[i] || [];
                     const rowStr = row.map(c => String(c || '')).join(' ');
@@ -420,7 +457,6 @@
                         if (cellVal) lastUpdateVal = cellVal;
                     }
 
-                    // Check if row has column headers
                     for (let j = 0; j < row.length; j++) {
                         const cell = String(row[j] || '').trim();
                         if (cell === 'WITEL') headersRowIdx = i;
@@ -432,15 +468,12 @@
                     return;
                 }
 
-                // Update Header Subtitle Info
-                // Mengambil tanggal hari ini dalam format YYYY-MM-DD
                 const today = new Date().toISOString().split('T')[0];
 
                 document.getElementById('info-tgl-report').innerHTML = `<i class="fa-regular fa-calendar-check mr-1"></i> ${tglReportVal || 'Tanggal Report : ' + today}`;
                 document.getElementById('info-periode').innerHTML = `<i class="fa-regular fa-clock mr-1"></i> ${periodeVal || 'PERIODE ORDER & PS : 2026-08-01 to 2026-08-26'}`;
                 document.getElementById('info-last-update').innerHTML = `<i class="fa-solid fa-rotate mr-1"></i> ${lastUpdateVal || 'Last update proses : 26-08-2026 07:34:14 WIB (Source: ETL XPRO)'}`;
 
-                // Map header column names to column index
                 const headerRow = jsonData[headersRowIdx];
                 for (let j = 0; j < headerRow.length; j++) {
                     const cell = String(headerRow[j] || '').trim().toUpperCase();
@@ -462,7 +495,8 @@
                 let totalRE = 0, totalPREPI = 0, totalPI = 0, totalQC2 = 0, totalFallout = 0, totalPS = 0;
                 
                 const witelNames = [];
-                const psValues = [];
+                const ttiValues = [];
+                const psPiValues = [];
 
                 for (let i = headersRowIdx + 1; i < jsonData.length; i++) {
                     const row = jsonData[i] || [];
@@ -492,7 +526,8 @@
                         totalPS = ps;
                     } else {
                         witelNames.push(witel);
-                        psValues.push(ps);
+                        ttiValues.push(tti);
+                        psPiValues.push(ps_pi);
                     }
 
                     const tr = document.createElement('tr');
@@ -517,15 +552,13 @@
                     tbody.appendChild(tr);
                 }
 
-                // Update KPI Cards
                 document.getElementById('kpi-re').innerText = formatNumber(totalRE);
                 document.getElementById('kpi-pi').innerText = formatNumber(totalPI);
                 document.getElementById('kpi-qc2').innerText = formatNumber(totalQC2);
                 document.getElementById('kpi-fallout').innerText = formatNumber(totalFallout);
                 document.getElementById('kpi-ps').innerText = formatNumber(totalPS);
 
-                // Render Visualisasi Grafik Batang & Pie
-                renderCharts(witelNames, psValues, {
+                renderCharts(witelNames, ttiValues, psPiValues, {
                     prepi: totalPREPI,
                     pi: totalPI,
                     fallout: totalFallout,
